@@ -51,6 +51,7 @@ export default function createSlider(Component) {
       max: 100,
       step: 1,
       marks: {},
+      canonical: true,
       handle({ index, ...restProps }) {
         delete restProps.dragging;
         return <Handle {...restProps} key={index} />;
@@ -231,9 +232,23 @@ export default function createSlider(Component) {
     }
 
     calcValue(offset) {
-      const { vertical, min, max } = this.props;
-      const ratio = Math.abs(Math.max(offset, 0) / this.getSliderLength());
-      const value = vertical ? (1 - ratio) * (max - min) + min : ratio * (max - min) + min;
+      const { vertical, min, max, marks, canonical } = this.props;
+
+      const sliderLength = this.getSliderLength();
+      const ratio = Math.abs(Math.max(Math.min(offset, sliderLength), 0) / sliderLength);
+
+      let value;
+      if (canonical) {
+        value = vertical ? (1 - ratio) * (max - min) + min : ratio * (max - min) + min;
+      } else {
+        const marksKeys = Object.keys(marks).map(parseFloat);
+        const floatIndex = ratio * (marksKeys.length - 1);
+
+        const borderValues = [marksKeys[Math.floor(floatIndex)], marksKeys[Math.ceil(floatIndex)]];
+
+        value = vertical ? (1 - ratio) * (max - min) + min : borderValues[0] + (floatIndex % 1) * (borderValues[1] - borderValues[0]);
+      }
+      
       return value;
     }
 
@@ -244,9 +259,15 @@ export default function createSlider(Component) {
     }
 
     calcOffset(value) {
-      const { min, max } = this.props;
-      const ratio = (value - min) / (max - min);
-      return ratio * 100;
+      const { min, max, marks, canonical } = this.props;
+
+      if (canonical) {
+        const ratio = (value - min) / (max - min);
+        return ratio * 100;
+      }
+
+      var marksKeys = Object.keys(marks).map(parseFloat);
+      return marksKeys.indexOf(value) / (marksKeys.length - 1) * 100;
     }
 
     saveSlider = (slider) => {
@@ -275,6 +296,7 @@ export default function createSlider(Component) {
         railStyle,
         dotStyle,
         activeDotStyle,
+        canonical
       } = this.props;
       const { tracks, handles } = super.render();
 
@@ -317,6 +339,7 @@ export default function createSlider(Component) {
             min={min}
             dotStyle={dotStyle}
             activeDotStyle={activeDotStyle}
+            canonical={canonical}
           />
           {handles}
           <Marks
@@ -328,6 +351,7 @@ export default function createSlider(Component) {
             upperBound={this.getUpperBound()}
             max={max}
             min={min}
+            canonical={canonical}
           />
           {children}
         </div>

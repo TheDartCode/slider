@@ -9,6 +9,7 @@ const Marks = ({
   upperBound,
   lowerBound,
   max, min,
+  canonical
 }) => {
   const marksKeys = Object.keys(marks);
   const marksCount = marksKeys.length;
@@ -16,7 +17,7 @@ const Marks = ({
   const markWidth = unit * 0.9;
 
   const range = max - min;
-  const elements = marksKeys.map(parseFloat).sort((a, b) => a - b).map(point => {
+  const elements = marksKeys.map(parseFloat).sort((a, b) => a - b).map((point, index) => {
     const markPoint = marks[point];
     const markPointIsObject = typeof markPoint === 'object' &&
             !React.isValidElement(markPoint);
@@ -40,7 +41,7 @@ const Marks = ({
     const leftStyle = {
       width: `${markWidth}%`,
       marginLeft: `${-markWidth / 2}%`,
-      left: `${(point - min) / range * 100}%`,
+      left: canonical ? `${(point - min) / range * 100}%` : `${index / (marksKeys.length - 1) * 100}%`,
     };
 
     const style = vertical ? bottomStyle : leftStyle;

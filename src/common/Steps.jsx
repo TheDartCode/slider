@@ -17,11 +17,11 @@ const calcPoints = (vertical, marks, dots, step, min, max) => {
   return points;
 };
 
-const Steps = ({ prefixCls, vertical, marks, dots, step, included,
+const Steps = ({ prefixCls, vertical, marks, dots, step, included, canonical,
                 lowerBound, upperBound, max, min, dotStyle, activeDotStyle }) => {
   const range = max - min;
-  const elements = calcPoints(vertical, marks, dots, step, min, max).map((point) => {
-    const offset = `${Math.abs(point - min) / range * 100}%`;
+  const elements = calcPoints(vertical, marks, dots, step, min, max).map((point, index) => {
+    const offset = canonical ? `${Math.abs(point - min) / range * 100}%` : `${index / (Object.keys(marks).length - 1) * 100}%`;
 
     const isActived = (!included && point === upperBound) ||
             (included && point <= upperBound && point >= lowerBound);
