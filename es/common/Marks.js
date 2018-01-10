@@ -1,6 +1,6 @@
 import _extends from 'babel-runtime/helpers/extends';
-import _typeof from 'babel-runtime/helpers/typeof';
 import _defineProperty from 'babel-runtime/helpers/defineProperty';
+import _typeof from 'babel-runtime/helpers/typeof';
 import React from 'react';
 import classNames from 'classnames';
 
@@ -26,6 +26,13 @@ var Marks = function Marks(_ref) {
   }).map(function (point, index) {
     var _classNames;
 
+    var markPoint = marks[point];
+    var markPointIsObject = (typeof markPoint === 'undefined' ? 'undefined' : _typeof(markPoint)) === 'object' && !React.isValidElement(markPoint);
+    var markLabel = markPointIsObject ? markPoint.label : markPoint;
+    if (!markLabel) {
+      return null;
+    }
+
     var isActive = !included && point === upperBound || included && point <= upperBound && point >= lowerBound;
     var markClassName = classNames((_classNames = {}, _defineProperty(_classNames, className + '-text', true), _defineProperty(_classNames, className + '-text-active', isActive), _classNames));
 
@@ -41,10 +48,6 @@ var Marks = function Marks(_ref) {
     };
 
     var style = vertical ? bottomStyle : leftStyle;
-
-    var markPoint = marks[point];
-    var markPointIsObject = (typeof markPoint === 'undefined' ? 'undefined' : _typeof(markPoint)) === 'object' && !React.isValidElement(markPoint);
-    var markLabel = markPointIsObject ? markPoint.label : markPoint;
     var markStyle = markPointIsObject ? _extends({}, style, markPoint.style) : style;
     return React.createElement(
       'span',

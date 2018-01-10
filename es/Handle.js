@@ -17,8 +17,20 @@ var Handle = function (_React$Component) {
   }
 
   _createClass(Handle, [{
+    key: 'focus',
+    value: function focus() {
+      this.handle.focus();
+    }
+  }, {
+    key: 'blur',
+    value: function blur() {
+      this.handle.blur();
+    }
+  }, {
     key: 'render',
     value: function render() {
+      var _this2 = this;
+
       var _props = this.props,
           className = _props.className,
           vertical = _props.vertical,
@@ -28,7 +40,8 @@ var Handle = function (_React$Component) {
           min = _props.min,
           max = _props.max,
           value = _props.value,
-          restProps = _objectWithoutProperties(_props, ['className', 'vertical', 'offset', 'style', 'disabled', 'min', 'max', 'value']);
+          tabIndex = _props.tabIndex,
+          restProps = _objectWithoutProperties(_props, ['className', 'vertical', 'offset', 'style', 'disabled', 'min', 'max', 'value', 'tabIndex']);
 
       var postionStyle = vertical ? { bottom: offset + '%' } : { left: offset + '%' };
       var elStyle = _extends({}, style, postionStyle);
@@ -42,7 +55,11 @@ var Handle = function (_React$Component) {
         });
       }
       return React.createElement('div', _extends({
-        role: 'slider'
+        ref: function ref(node) {
+          return _this2.handle = node;
+        },
+        role: 'slider',
+        tabIndex: tabIndex || 0
       }, ariaProps, restProps, {
         className: className,
         style: elStyle
@@ -64,5 +81,6 @@ Handle.propTypes = {
   disabled: PropTypes.bool,
   min: PropTypes.number,
   max: PropTypes.number,
-  value: PropTypes.number
+  value: PropTypes.number,
+  tabIndex: PropTypes.number
 };

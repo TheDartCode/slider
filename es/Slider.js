@@ -40,6 +40,17 @@ var Slider = function (_React$Component) {
   }
 
   _createClass(Slider, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _props = this.props,
+          autoFocus = _props.autoFocus,
+          disabled = _props.disabled;
+
+      if (autoFocus && !disabled) {
+        this.focus();
+      }
+    }
+  }, {
     key: 'componentWillReceiveProps',
     value: function componentWillReceiveProps(nextProps) {
       if (!('value' in nextProps || 'min' in nextProps || 'max' in nextProps)) return;
@@ -86,12 +97,28 @@ var Slider = function (_React$Component) {
     key: 'onMove',
     value: function onMove(e, position) {
       utils.pauseEvent(e);
-      var state = this.state;
+      var oldValue = this.state.value;
+
       var value = this.calcValueByPos(position);
-      var oldValue = state.value;
       if (value === oldValue) return;
 
       this.onChange({ value: value });
+    }
+  }, {
+    key: 'onKeyboard',
+    value: function onKeyboard(e) {
+      var valueMutator = utils.getKeyboardValueMutator(e);
+
+      if (valueMutator) {
+        utils.pauseEvent(e);
+        var state = this.state;
+        var oldValue = state.value;
+        var mutatedValue = valueMutator(oldValue, this.props);
+        var value = this.trimAlignValue(mutatedValue);
+        if (value === oldValue) return;
+
+        this.onChange({ value: value });
+      }
     }
   }, {
     key: 'getValue',
@@ -122,17 +149,18 @@ var Slider = function (_React$Component) {
     value: function render() {
       var _this2 = this;
 
-      var _props = this.props,
-          prefixCls = _props.prefixCls,
-          vertical = _props.vertical,
-          included = _props.included,
-          disabled = _props.disabled,
-          minimumTrackStyle = _props.minimumTrackStyle,
-          trackStyle = _props.trackStyle,
-          handleStyle = _props.handleStyle,
-          min = _props.min,
-          max = _props.max,
-          handleGenerator = _props.handle;
+      var _props2 = this.props,
+          prefixCls = _props2.prefixCls,
+          vertical = _props2.vertical,
+          included = _props2.included,
+          disabled = _props2.disabled,
+          minimumTrackStyle = _props2.minimumTrackStyle,
+          trackStyle = _props2.trackStyle,
+          handleStyle = _props2.handleStyle,
+          tabIndex = _props2.tabIndex,
+          min = _props2.min,
+          max = _props2.max,
+          handleGenerator = _props2.handle;
       var _state = this.state,
           value = _state.value,
           dragging = _state.dragging;
@@ -147,6 +175,8 @@ var Slider = function (_React$Component) {
         disabled: disabled,
         min: min,
         max: max,
+        index: 0,
+        tabIndex: tabIndex,
         style: handleStyle[0] || handleStyle,
         ref: function ref(h) {
           return _this2.saveHandle(0, h);
@@ -173,7 +203,9 @@ var Slider = function (_React$Component) {
 Slider.propTypes = {
   defaultValue: PropTypes.number,
   value: PropTypes.number,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  autoFocus: PropTypes.bool,
+  tabIndex: PropTypes.number
 };
 
 

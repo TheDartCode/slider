@@ -43,6 +43,7 @@ export default function createSlider(Component) {
           _this.dragOffset = position - handlePosition;
           position = handlePosition;
         }
+        _this.removeDocumentEvents();
         _this.onStart(position);
         _this.addDocumentMouseEvents();
         utils.pauseEvent(e);
@@ -65,6 +66,36 @@ export default function createSlider(Component) {
         utils.pauseEvent(e);
       };
 
+      _this.onFocus = function (e) {
+        var _this$props = _this.props,
+            onFocus = _this$props.onFocus,
+            vertical = _this$props.vertical;
+
+        if (utils.isEventFromHandle(e, _this.handlesRefs)) {
+          var handlePosition = utils.getHandleCenterPosition(vertical, e.target);
+          _this.dragOffset = 0;
+          _this.onStart(handlePosition);
+          utils.pauseEvent(e);
+          if (onFocus) {
+            onFocus(e);
+          }
+        }
+      };
+
+      _this.onBlur = function (e) {
+        var onBlur = _this.props.onBlur;
+
+        _this.onEnd(e);
+        if (onBlur) {
+          onBlur(e);
+        }
+      };
+
+      _this.onMouseUp = function () {
+        _this.onEnd();
+        _this.removeDocumentEvents();
+      };
+
       _this.onMouseMove = function (e) {
         if (!_this.sliderRef) {
           _this.onEnd();
@@ -82,6 +113,12 @@ export default function createSlider(Component) {
 
         var position = utils.getTouchPosition(_this.props.vertical, e);
         _this.onMove(e, position - _this.dragOffset);
+      };
+
+      _this.onKeyDown = function (e) {
+        if (_this.sliderRef && utils.isEventFromHandle(e, _this.handlesRefs)) {
+          _this.onKeyboard(e);
+        }
       };
 
       _this.saveSlider = function (slider) {
@@ -106,16 +143,21 @@ export default function createSlider(Component) {
         this.removeDocumentEvents();
       }
     }, {
+      key: 'componentDidMount',
+      value: function componentDidMount() {
+                this.document = this.sliderRef && this.sliderRef.ownerDocument;
+      }
+    }, {
       key: 'addDocumentTouchEvents',
       value: function addDocumentTouchEvents() {
-                this.onTouchMoveListener = addEventListener(document, 'touchmove', this.onTouchMove);
-        this.onTouchUpListener = addEventListener(document, 'touchend', this.onEnd);
+                this.onTouchMoveListener = addEventListener(this.document, 'touchmove', this.onTouchMove);
+        this.onTouchUpListener = addEventListener(this.document, 'touchend', this.onEnd);
       }
     }, {
       key: 'addDocumentMouseEvents',
       value: function addDocumentMouseEvents() {
-        this.onMouseMoveListener = addEventListener(document, 'mousemove', this.onMouseMove);
-        this.onMouseUpListener = addEventListener(document, 'mouseup', this.onEnd);
+        this.onMouseMoveListener = addEventListener(this.document, 'mousemove', this.onMouseMove);
+        this.onMouseUpListener = addEventListener(this.document, 'mouseup', this.onEnd);
       }
     }, {
       key: 'removeDocumentEvents',
@@ -127,6 +169,20 @@ export default function createSlider(Component) {
         this.onMouseMoveListener && this.onMouseMoveListener.remove();
         this.onMouseUpListener && this.onMouseUpListener.remove();
         
+      }
+    }, {
+      key: 'focus',
+      value: function focus() {
+        if (!this.props.disabled) {
+          this.handlesRefs[0].focus();
+        }
+      }
+    }, {
+      key: 'blur',
+      value: function blur() {
+        if (!this.props.disabled) {
+          this.handlesRefs[0].blur();
+        }
       }
     }, {
       key: 'getSliderStart',
@@ -157,7 +213,9 @@ export default function createSlider(Component) {
             marks = _props.marks,
             canonical = _props.canonical;
 
-        var ratio = Math.abs(Math.max(offset, 0) / this.getSliderLength());
+
+        var sliderLength = this.getSliderLength();
+        var ratio = Math.abs(Math.max(Math.min(offset, sliderLength), 0) / sliderLength);
 
         var value = void 0;
         if (canonical) {
@@ -239,6 +297,10 @@ export default function createSlider(Component) {
             className: sliderClassName,
             onTouchStart: disabled ? noop : this.onTouchStart,
             onMouseDown: disabled ? noop : this.onMouseDown,
+            onMouseUp: disabled ? noop : this.onMouseUp,
+            onKeyDown: disabled ? noop : this.onKeyDown,
+            onFocus: disabled ? noop : this.onFocus,
+            onBlur: disabled ? noop : this.onBlur,
             style: style
           },
           React.createElement('div', {
@@ -300,7 +362,10 @@ export default function createSlider(Component) {
     trackStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.arrayOf(PropTypes.object)]),
     railStyle: PropTypes.object,
     dotStyle: PropTypes.object,
-    activeDotStyle: PropTypes.object
+    activeDotStyle: PropTypes.object,
+    autoFocus: PropTypes.bool,
+    onFocus: PropTypes.func,
+    onBlur: PropTypes.func
   }), _class.defaultProps = _extends({}, Component.defaultProps, {
     prefixCls: 'rc-slider',
     className: '',

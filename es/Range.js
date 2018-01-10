@@ -10,6 +10,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import shallowEqual from 'shallowequal';
+import warning from 'warning';
 import Track from './common/Track';
 import createSlider from './common/createSlider';
 import * as utils from './utils';
@@ -147,6 +148,11 @@ var Range = function (_React$Component) {
       });
     }
   }, {
+    key: 'onKeyboard',
+    value: function onKeyboard() {
+      warning(true, 'Keyboard support is not yet supported for ranges.');
+    }
+  }, {
     key: 'getValue',
     value: function getValue() {
       return this.state.bounds;
@@ -176,7 +182,8 @@ var Range = function (_React$Component) {
 
       var boundNeedMoving = closestBound;
       var isAtTheSamePoint = bounds[closestBound + 1] === bounds[closestBound];
-      if (isAtTheSamePoint) {
+
+      if (isAtTheSamePoint && bounds[recent] === bounds[closestBound]) {
         boundNeedMoving = recent;
       }
 
@@ -342,7 +349,8 @@ var Range = function (_React$Component) {
           max = _props2.max,
           handleGenerator = _props2.handle,
           trackStyle = _props2.trackStyle,
-          handleStyle = _props2.handleStyle;
+          handleStyle = _props2.handleStyle,
+          tabIndex = _props2.tabIndex;
 
 
       var offsets = bounds.map(function (v) {
@@ -360,6 +368,7 @@ var Range = function (_React$Component) {
           value: v,
           dragging: handle === i,
           index: i,
+          tabIndex: tabIndex[i] || 0,
           min: min,
           max: max,
           disabled: disabled,
@@ -400,12 +409,14 @@ Range.propTypes = {
   count: PropTypes.number,
   pushable: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
   allowCross: PropTypes.bool,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  tabIndex: PropTypes.arrayOf(PropTypes.number)
 };
 Range.defaultProps = {
   count: 1,
   allowCross: true,
-  pushable: false
+  pushable: false,
+  tabIndex: []
 };
 
 
